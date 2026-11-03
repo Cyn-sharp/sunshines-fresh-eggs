@@ -1,104 +1,101 @@
-// src/components/admin/AdminDashboard.jsx
 import { useAuth } from "../../hooks/useAuth";
+import { useBodegaStock, useTindahanStock, toTotalPieces } from "../../hooks/useInventory";
+import Navbar from "../shared/Navbar";
 import {
-  Egg,
   Package,
   ShoppingCart,
-  ClipboardCheck,
-  TrendingUp,
   LogOut,
   Bell,
+  Store,
+  Warehouse,
+  Users,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { EGG_SIZES } from "../../utils/constants";
 
 const AdminDashboard = () => {
   const { userProfile, logout } = useAuth();
+  const { stock: bodega } = useBodegaStock();
+  const { stock: tindahan } = useTindahanStock();
+  const navigate = useNavigate();
+
+  let totalBodega = 0;
+  let totalTindahan = 0;
+  EGG_SIZES.forEach((size) => {
+    const b = bodega[size.id];
+    const t = tindahan[size.id];
+    if (b) totalBodega += toTotalPieces(b.trays, b.pieces);
+    if (t) totalTindahan += toTotalPieces(t.trays, t.pieces);
+  });
 
   return (
-    <div className="min-h-screen bg-sunshine-50 pb-20">
-      {/* Header */}
+    <div className="min-h-screen bg-sunshine-50 pb-24">
       <header className="bg-sunshine-500 text-white px-4 py-6 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sunshine-100 text-sm">Welcome back,</p>
-            <h1 className="text-xl font-extrabold">
-              {userProfile?.name || "Admin"} 👋
-            </h1>
+            <h1 className="text-xl font-extrabold">{userProfile?.name || "Admin"} 👋</h1>
           </div>
           <div className="flex items-center gap-3">
             <button className="relative p-2 bg-sunshine-400 rounded-full">
               <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center font-bold">
-                2
-              </span>
             </button>
-            <button
-              onClick={logout}
-              className="p-2 bg-sunshine-600 rounded-full hover:bg-sunshine-700 transition-colors"
-            >
+            <button onClick={logout} className="p-2 bg-sunshine-600 rounded-full">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>
-        <p className="mt-2 text-sunshine-100 text-xs">
-          Sunshine's Fresh Eggs • Admin Panel
-        </p>
       </header>
 
-      {/* Quick Stats (Placeholder) */}
-      <div className="px-4 mt-6">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="text-xs text-sunshine-500 font-medium">Today's Sales</p>
-            <p className="text-2xl font-extrabold text-sunshine-900 mt-1">₱0</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="text-xs text-sunshine-500 font-medium">Transactions</p>
-            <p className="text-2xl font-extrabold text-sunshine-900 mt-1">0</p>
-          </div>
-        </div>
+      {/* Live Stats */}
+      <div className="px-4 mt-6 grid grid-cols-2 gap-3">
+        <button onClick={() => navigate("/admin/bodega")}
+                className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-left active:scale-[0.97]">
+          <Warehouse className="w-5 h-5 text-blue-500 mb-1" />
+          <p className="text-xs text-blue-600 font-medium">Bodega</p>
+          <p className="text-2xl font-extrabold text-blue-900">{totalBodega.toLocaleString()}</p>
+          <p className="text-[10px] text-blue-400">pieces</p>
+        </button>
+        <button onClick={() => navigate("/admin/tindahan")}
+                className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 text-left active:scale-[0.97]">
+          <Store className="w-5 h-5 text-green-500 mb-1" />
+          <p className="text-xs text-green-600 font-medium">Tindahan</p>
+          <p className="text-2xl font-extrabold text-green-900">{totalTindahan.toLocaleString()}</p>
+          <p className="text-[10px] text-green-400">pieces</p>
+        </button>
       </div>
 
-      {/* Menu Grid */}
+      {/* Quick Actions */}
       <div className="px-4 mt-6">
         <h2 className="text-sm font-bold text-sunshine-700 mb-3 uppercase tracking-wide">
-          Management
+          Quick Actions
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: Package, label: "Bodega Stock", color: "bg-blue-100 text-blue-600" },
-            { icon: ShoppingCart, label: "Log Delivery", color: "bg-green-100 text-green-600" },
-            { icon: Egg, label: "Set Prices", color: "bg-purple-100 text-purple-600" },
-            { icon: ClipboardCheck, label: "Review Audit", color: "bg-orange-100 text-orange-600" },
-            { icon: TrendingUp, label: "Daily Report", color: "bg-pink-100 text-pink-600" },
-            { icon: Bell, label: "Alerts", color: "bg-red-100 text-red-600" },
-          ].map(({ icon: Icon, label, color }) => (
-            <button
-              key={label}
-              className="bg-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-2 
-                         hover:shadow-md transition-shadow active:scale-[0.97]"
-            >
-              <div className={`p-3 rounded-xl ${color}`}>
-                <Icon className="w-6 h-6" />
-              </div>
-              <span className="text-xs font-semibold text-sunshine-800 text-center">
-                {label}
-              </span>
-            </button>
-          ))}
+          <button onClick={() => navigate("/admin/delivery")}
+                  className="bg-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-2 active:scale-[0.97]">
+            <div className="p-3 rounded-xl bg-green-100 text-green-600">
+              <ShoppingCart className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-semibold text-sunshine-800">Log Delivery</span>
+          </button>
+          <button onClick={() => navigate("/admin/employees")}
+                  className="bg-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-2 active:scale-[0.97]">
+            <div className="p-3 rounded-xl bg-purple-100 text-purple-600">
+              <Users className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-semibold text-sunshine-800">Employees</span>
+          </button>
         </div>
       </div>
 
-      {/* Coming Soon Notice */}
-      <div className="px-4 mt-8">
-        <div className="bg-sunshine-100 border-2 border-dashed border-sunshine-300 rounded-2xl p-6 text-center">
-          <p className="text-sunshine-600 font-semibold text-sm">
-            🚧 Phase 1 Complete!
-          </p>
-          <p className="text-sunshine-500 text-xs mt-1">
-            Inventory features coming in Phase 2
-          </p>
+      <div className="px-4 mt-6">
+        <div className="bg-sunshine-100 border-2 border-dashed border-sunshine-300 rounded-2xl p-4 text-center">
+          <p className="text-sunshine-600 font-semibold text-sm">✅ Phase 2 Complete!</p>
+          <p className="text-sunshine-500 text-xs mt-1">Sales & auditing coming in Phase 3-4</p>
         </div>
       </div>
+
+      <Navbar role="admin" />
     </div>
   );
 };

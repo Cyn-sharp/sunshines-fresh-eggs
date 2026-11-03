@@ -1,4 +1,3 @@
-// src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -12,11 +11,14 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
+// Primary app (main auth — the logged-in admin)
 const app = initializeApp(firebaseConfig);
-
-// Initialize services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Secondary app (used ONLY for creating new users)
+// This prevents the admin from being signed out when creating a tindero account
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+export const secondaryAuth = getAuth(secondaryApp);
 
 export default app;
