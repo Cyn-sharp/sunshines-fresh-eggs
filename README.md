@@ -1,16 +1,49 @@
-# React + Vite
+# 🥚 Sunshine's Fresh Eggs — Inventory Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A mobile-first Progressive Web App (PWA) for managing egg inventory across a bodega (warehouse) and tindahan (retail store). Built for a real small business in the Philippines.
 
-Currently, two official plugins are available:
+## 📱 Features (Phase 1)
+- ✅ Email/Password Authentication (Firebase Auth)
+- ✅ Role-based access control (Admin & Tindero)
+- ✅ Protected routes with auto-redirect
+- ✅ Mobile-first responsive UI
+- ✅ Offline-ready architecture (PWA)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🗺️ Roadmap
+- [x] **Phase 1:** Project setup, Auth, Role-based routing
+- [ ] **Phase 2:** Inventory tracking (Bodega & Tindahan)
+- [ ] **Phase 3:** Sales logging & pricing
+- [ ] **Phase 4:** Daily auditing & discrepancy detection
+- [ ] **Phase 5:** Alerts & Admin dashboard
+- [ ] **Phase 6:** PWA offline support
+- [ ] **Phase 7:** Polish & deploy
 
-## React Compiler
+## 🛠 Tech Stack
+- **Frontend:** React 18 + Vite
+- **Styling:** Tailwind CSS
+- **Backend:** Firebase (Firestore + Auth)
+- **Icons:** Lucide React
+- **Routing:** React Router v6
+- **Hosting:** Vercel (planned)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Getting Started
 
-## Expanding the Oxlint configuration
+### Prerequisites
+- Node.js 18+
+- A Firebase project with Auth (Email/Password) and Firestore enabled
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### Installation
+```bash
+# Clone the repo
+git clone https://github.com/YOUR_USERNAME/sunshines-fresh-eggs.git
+cd sunshines-fresh-eggs
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your Firebase config
+
+# Start development server
+npm run dev
