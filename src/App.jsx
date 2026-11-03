@@ -11,10 +11,13 @@ import BodegaStock from "./components/admin/BodegaStock";
 import LogDelivery from "./components/admin/LogDelivery";
 import TindahanStock from "./components/admin/TindahanStock";
 import ManageEmployees from "./components/admin/ManageEmployees";
+import PriceManager from "./components/admin/PriceManager";
+import AuditReview from "./components/admin/AuditReview";
 
 import TinderoDashboard from "./components/tindero/TinderoDashboard";
 import LogTransfer from "./components/tindero/LogTransfer";
 import TinderoStock from "./components/tindero/TinderoStock";
+import ClosingCount from "./components/tindero/ClosingCount";
 
 const SmartRedirect = () => {
   const { userRole, loading } = useAuth();
@@ -24,35 +27,34 @@ const SmartRedirect = () => {
   return <Navigate to="/login" replace />;
 };
 
-const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<SmartRedirect />} />
-      <Route path="/login" element={<Login />} />
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<SmartRedirect />} />
+    <Route path="/login" element={<Login />} />
 
-      {/* Admin */}
-      <Route path="/admin" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/bodega" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><BodegaStock /></ProtectedRoute>} />
-      <Route path="/admin/delivery" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><LogDelivery /></ProtectedRoute>} />
-      <Route path="/admin/tindahan" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><TindahanStock /></ProtectedRoute>} />
-      <Route path="/admin/employees" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><ManageEmployees /></ProtectedRoute>} />
+    {/* Admin */}
+    <Route path="/admin" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></ProtectedRoute>} />
+    <Route path="/admin/bodega" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><BodegaStock /></ProtectedRoute>} />
+    <Route path="/admin/delivery" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><LogDelivery /></ProtectedRoute>} />
+    <Route path="/admin/tindahan" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><TindahanStock /></ProtectedRoute>} />
+    <Route path="/admin/employees" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><ManageEmployees /></ProtectedRoute>} />
+    <Route path="/admin/prices" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><PriceManager /></ProtectedRoute>} />
+    <Route path="/admin/audit" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AuditReview /></ProtectedRoute>} />
 
-      {/* Tindero */}
-      <Route path="/tindero" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><TinderoDashboard /></ProtectedRoute>} />
-      <Route path="/tindero/transfer" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><LogTransfer /></ProtectedRoute>} />
-      <Route path="/tindero/stock" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><TinderoStock /></ProtectedRoute>} />
+    {/* Tindero */}
+    <Route path="/tindero" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><TinderoDashboard /></ProtectedRoute>} />
+    <Route path="/tindero/closing" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><ClosingCount /></ProtectedRoute>} />
+    <Route path="/tindero/transfer" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><LogTransfer /></ProtectedRoute>} />
+    <Route path="/tindero/stock" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><TinderoStock /></ProtectedRoute>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-};
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>
+);
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
+      <Router><AppRoutes /></Router>
     </AuthProvider>
   );
 }
