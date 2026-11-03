@@ -1,4 +1,3 @@
-// src/hooks/useInventory.js
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -11,26 +10,13 @@ import {
 import { db } from "../firebase/config";
 import { EGGS_PER_TRAY } from "../utils/constants";
 
-// ============================================
-// Helper: Convert trays + pieces to total pieces
-// ============================================
-export const toTotalPieces = (trays, pieces) => {
-  return trays * EGGS_PER_TRAY + pieces;
-};
+export const toTotalPieces = (trays, pieces) => trays * EGGS_PER_TRAY + pieces;
 
-// ============================================
-// Helper: Convert total pieces back to trays + pieces
-// ============================================
-export const toTraysAndPieces = (totalPieces) => {
-  return {
-    trays: Math.floor(totalPieces / EGGS_PER_TRAY),
-    pieces: totalPieces % EGGS_PER_TRAY,
-  };
-};
+export const toTraysAndPieces = (totalPieces) => ({
+  trays: Math.floor(totalPieces / EGGS_PER_TRAY),
+  pieces: totalPieces % EGGS_PER_TRAY,
+});
 
-// ============================================
-// Hook: Real-time Bodega Stock
-// ============================================
 export const useBodegaStock = () => {
   const [stock, setStock] = useState({});
   const [loading, setLoading] = useState(true);
@@ -41,29 +27,18 @@ export const useBodegaStock = () => {
       collection(db, "bodegaStock"),
       (snapshot) => {
         const data = {};
-        snapshot.forEach((doc) => {
-          data[doc.id] = { id: doc.id, ...doc.data() };
-        });
+        snapshot.forEach((d) => { data[d.id] = { id: d.id, ...d.data() }; });
         setStock(data);
         setLoading(false);
-        setError(null);
       },
-      (err) => {
-        console.error("Bodega stock listener error:", err);
-        setError("Cannot load bodega stock. Check your connection.");
-        setLoading(false);
-      }
+      (err) => { setError("Cannot load bodega stock."); setLoading(false); }
     );
-
     return () => unsub();
   }, []);
 
   return { stock, loading, error };
 };
 
-// ============================================
-// Hook: Real-time Tindahan Stock
-// ============================================
 export const useTindahanStock = () => {
   const [stock, setStock] = useState({});
   const [loading, setLoading] = useState(true);
@@ -74,146 +49,100 @@ export const useTindahanStock = () => {
       collection(db, "tindahanStock"),
       (snapshot) => {
         const data = {};
-        snapshot.forEach((doc) => {
-          data[doc.id] = { id: doc.id, ...doc.data() };
-        });
+        snapshot.forEach((d) => { data[d.id] = { id: d.id, ...d.data() }; });
         setStock(data);
         setLoading(false);
-        setError(null);
       },
-      (err) => {
-        console.error("Tindahan stock listener error:", err);
-        setError("Cannot load tindahan stock. Check your connection.");
-        setLoading(false);
-      }
+      (err) => { setError("Cannot load tindahan stock."); setLoading(false); }
     );
-
     return () => unsub();
   }, []);
 
   return { stock, loading, error };
 };
 
-// ============================================
-// Action: Log Delivery to Bodega (Admin only)
-// ============================================
 export const logDelivery = async (sizeId, trays, pieces, userId) => {
-  if (trays === 0 && pieces === 0) {
-    throw new Error("Please enter at least 1 tray or 1 piece.");
-  }
-
+  if (trays === 0 && pieces === 0) throw new Error("Enter at least 1 tray or piece.");
   const bodegaRef = doc(db, "bodegaStock", sizeId);
 
-  try {
-    // Use a transaction for safety
-    await runTransaction(db, async (transaction) => {
-      const bodegaDoc = await transaction.get(bodegaRef);
+  await runTransaction(db, async (transaction) => {
+    const bodegaDoc = await transaction.get(bodegaRef);
+    if (!bodegaDoc.exists()) throw new Error(`"${sizeId}" not found.`);
+    const current = bodegaDoc.data();
+    const newTotal = toTotalPieces(current.trays, current.pieces) + toTotalPieces(trays, pieces);
+    const newStock = toTraysAndPieces(newTotal);
+    transaction.update(bodegaRef, { trays: newStock.trays, pieces: newStock.pieces, lastUpdated: new Date().toISOString() });
+  });
 
-      if (!bodegaDoc.exists()) {
-        throw new Error(`Egg size "${sizeId}" not found in bodega.`);
-      }
-
-      const current = bodegaDoc.data();
-      const currentTotal = toTotalPieces(current.trays, current.pieces);
-      const addTotal = toTotalPieces(trays, pieces);
-      const newTotal = currentTotal + addTotal;
-      const newStock = toTraysAndPieces(newTotal);
-
-      transaction.update(bodegaRef, {
-        trays: newStock.trays,
-        pieces: newStock.pieces,
-        lastUpdated: new Date().toISOString(),
-      });
-    });
-
-    // Log the delivery record
-    await addDoc(collection(db, "deliveries"), {
-      eggSize: sizeId,
-      trays,
-      pieces,
-      totalPieces: toTotalPieces(trays, pieces),
-      loggedBy: userId,
-      timestamp: serverTimestamp(),
-      date: new Date().toISOString().split("T")[0],
-    });
-
-    return { success: true };
-  } catch (err) {
-    console.error("Delivery error:", err);
-    throw err;
-  }
+  await addDoc(collection(db, "deliveries"), {
+    eggSize: sizeId, trays, pieces, totalPieces: toTotalPieces(trays, pieces),
+    loggedBy: userId, timestamp: serverTimestamp(), date: new Date().toISOString().split("T")[0],
+  });
+  return { success: true };
 };
 
-// ============================================
-// Action: Transfer Bodega → Tindahan
-// ============================================
 export const transferStock = async (sizeId, trays, pieces, userId) => {
-  if (trays === 0 && pieces === 0) {
-    throw new Error("Please enter at least 1 tray or 1 piece.");
-  }
-
+  if (trays === 0 && pieces === 0) throw new Error("Enter at least 1 tray or piece.");
   const bodegaRef = doc(db, "bodegaStock", sizeId);
   const tindahanRef = doc(db, "tindahanStock", sizeId);
   const transferTotal = toTotalPieces(trays, pieces);
 
-  try {
-    await runTransaction(db, async (transaction) => {
-      // Read both documents
-      const bodegaDoc = await transaction.get(bodegaRef);
-      const tindahanDoc = await transaction.get(tindahanRef);
+  await runTransaction(db, async (transaction) => {
+    const bodegaDoc = await transaction.get(bodegaRef);
+    const tindahanDoc = await transaction.get(tindahanRef);
+    if (!bodegaDoc.exists() || !tindahanDoc.exists()) throw new Error(`"${sizeId}" not found.`);
+    const bodegaTotal = toTotalPieces(bodegaDoc.data().trays, bodegaDoc.data().pieces);
+    if (transferTotal > bodegaTotal) throw new Error(`Not enough! Bodega has ${bodegaDoc.data().trays}T ${bodegaDoc.data().pieces}p.`);
+    const newBodega = toTraysAndPieces(bodegaTotal - transferTotal);
+    const tData = tindahanDoc.data();
+    const newTindahan = toTraysAndPieces(toTotalPieces(tData.trays, tData.pieces) + transferTotal);
+    transaction.update(bodegaRef, { trays: newBodega.trays, pieces: newBodega.pieces, lastUpdated: new Date().toISOString() });
+    transaction.update(tindahanRef, { trays: newTindahan.trays, pieces: newTindahan.pieces, lastUpdated: new Date().toISOString() });
+  });
 
-      if (!bodegaDoc.exists() || !tindahanDoc.exists()) {
-        throw new Error(`Egg size "${sizeId}" not found.`);
-      }
+  await addDoc(collection(db, "transfers"), {
+    eggSize: sizeId, trays, pieces, totalPieces: transferTotal,
+    transferredBy: userId, timestamp: serverTimestamp(), date: new Date().toISOString().split("T")[0],
+  });
+  return { success: true };
+};
 
-      const bodegaData = bodegaDoc.data();
-      const tindahanData = tindahanDoc.data();
+// ============================================
+// NEW: Adjust Bodega Stock Directly (Admin)
+// ============================================
+export const adjustBodegaStock = async (sizeId, newTrays, newPieces, reason, userId) => {
+  const bodegaRef = doc(db, "bodegaStock", sizeId);
 
-      const bodegaTotal = toTotalPieces(bodegaData.trays, bodegaData.pieces);
+  await runTransaction(db, async (transaction) => {
+    const bodegaDoc = await transaction.get(bodegaRef);
+    if (!bodegaDoc.exists()) throw new Error(`"${sizeId}" not found.`);
 
-      // VALIDATION: Can't transfer more than bodega has!
-      if (transferTotal > bodegaTotal) {
-        throw new Error(
-          `Not enough stock! Bodega only has ${bodegaData.trays} trays and ${bodegaData.pieces} pieces.`
-        );
-      }
+    const old = bodegaDoc.data();
+    const oldTotal = toTotalPieces(old.trays, old.pieces);
+    const newTotal = toTotalPieces(newTrays, newPieces);
 
-      // Calculate new values
-      const newBodegaTotal = bodegaTotal - transferTotal;
-      const newBodega = toTraysAndPieces(newBodegaTotal);
-
-      const tindahanTotal = toTotalPieces(tindahanData.trays, tindahanData.pieces);
-      const newTindahanTotal = tindahanTotal + transferTotal;
-      const newTindahan = toTraysAndPieces(newTindahanTotal);
-
-      // Update both atomically
-      transaction.update(bodegaRef, {
-        trays: newBodega.trays,
-        pieces: newBodega.pieces,
-        lastUpdated: new Date().toISOString(),
-      });
-
-      transaction.update(tindahanRef, {
-        trays: newTindahan.trays,
-        pieces: newTindahan.pieces,
-        lastUpdated: new Date().toISOString(),
-      });
+    transaction.update(bodegaRef, {
+      trays: newTrays,
+      pieces: newPieces,
+      lastUpdated: new Date().toISOString(),
     });
 
-    // Log the transfer record
-    await addDoc(collection(db, "transfers"), {
+    // Log the adjustment for audit trail
+    await addDoc(collection(db, "adjustments"), {
       eggSize: sizeId,
-      trays,
-      pieces,
-      totalPieces: transferTotal,
-      transferredBy: userId,
+      oldTrays: old.trays,
+      oldPieces: old.pieces,
+      oldTotal,
+      newTrays,
+      newPieces,
+      newTotal,
+      difference: newTotal - oldTotal,
+      reason,
+      adjustedBy: userId,
       timestamp: serverTimestamp(),
       date: new Date().toISOString().split("T")[0],
     });
+  });
 
-    return { success: true };
-  } catch (err) {
-    console.error("Transfer error:", err);
-    throw err;
-  }
+  return { success: true };
 };

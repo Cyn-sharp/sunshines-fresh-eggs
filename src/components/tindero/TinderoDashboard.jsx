@@ -2,7 +2,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useTindahanStock, toTotalPieces } from "../../hooks/useInventory";
 import { useTodayAudit } from "../../hooks/useAudit";
 import Navbar from "../shared/Navbar";
-import { ArrowRightLeft, LogOut, Package, ClipboardCheck } from "lucide-react";
+import { ArrowRightLeft, LogOut, Package, ClipboardCheck, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EGG_SIZES } from "../../utils/constants";
 
@@ -29,6 +29,7 @@ const TinderoDashboard = () => {
         </div>
       </header>
 
+      {/* Tindahan Stock */}
       <div className="px-4 mt-6">
         <button onClick={() => navigate("/tindero/stock")}
           className="w-full bg-sunshine-50 border-2 border-sunshine-200 rounded-2xl p-4 text-center active:scale-[0.97]">
@@ -38,6 +39,7 @@ const TinderoDashboard = () => {
         </button>
       </div>
 
+      {/* Actions */}
       <div className="px-4 mt-6 space-y-3">
         <h2 className="text-sm font-bold text-sunshine-700 uppercase tracking-wide">Actions</h2>
 
@@ -58,6 +60,15 @@ const TinderoDashboard = () => {
           <div className="text-left">
             <p className="font-bold text-sunshine-900">Get Eggs from Bodega</p>
             <p className="text-xs text-sunshine-500">Transfer stock to tindahan</p>
+          </div>
+        </button>
+
+        <button onClick={() => navigate("/tindero/bodega")}
+          className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4 active:scale-[0.98]">
+          <div className="p-3 rounded-xl bg-sunshine-100 text-sunshine-600"><Eye className="w-6 h-6" /></div>
+          <div className="text-left">
+            <p className="font-bold text-sunshine-900">View Bodega Stock</p>
+            <p className="text-xs text-sunshine-500">Check what's available (read-only)</p>
           </div>
         </button>
       </div>

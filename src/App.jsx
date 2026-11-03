@@ -8,6 +8,7 @@ import { ROLES } from "./utils/constants";
 
 import AdminDashboard from "./components/admin/AdminDashboard";
 import BodegaStock from "./components/admin/BodegaStock";
+import AdjustStock from "./components/admin/AdjustStock";
 import LogDelivery from "./components/admin/LogDelivery";
 import TindahanStock from "./components/admin/TindahanStock";
 import ManageEmployees from "./components/admin/ManageEmployees";
@@ -17,6 +18,7 @@ import AuditReview from "./components/admin/AuditReview";
 import TinderoDashboard from "./components/tindero/TinderoDashboard";
 import LogTransfer from "./components/tindero/LogTransfer";
 import TinderoStock from "./components/tindero/TinderoStock";
+import BodegaView from "./components/tindero/BodegaView";
 import ClosingCount from "./components/tindero/ClosingCount";
 
 const SmartRedirect = () => {
@@ -35,6 +37,7 @@ const AppRoutes = () => (
     {/* Admin */}
     <Route path="/admin" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></ProtectedRoute>} />
     <Route path="/admin/bodega" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><BodegaStock /></ProtectedRoute>} />
+    <Route path="/admin/bodega/adjust/:sizeId" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AdjustStock /></ProtectedRoute>} />
     <Route path="/admin/delivery" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><LogDelivery /></ProtectedRoute>} />
     <Route path="/admin/tindahan" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><TindahanStock /></ProtectedRoute>} />
     <Route path="/admin/employees" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><ManageEmployees /></ProtectedRoute>} />
@@ -46,6 +49,7 @@ const AppRoutes = () => (
     <Route path="/tindero/closing" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><ClosingCount /></ProtectedRoute>} />
     <Route path="/tindero/transfer" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><LogTransfer /></ProtectedRoute>} />
     <Route path="/tindero/stock" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><TinderoStock /></ProtectedRoute>} />
+    <Route path="/tindero/bodega" element={<ProtectedRoute allowedRoles={[ROLES.TINDERO]}><BodegaView /></ProtectedRoute>} />
 
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
