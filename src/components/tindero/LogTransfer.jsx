@@ -7,7 +7,7 @@ import TrayPieceInput from "../shared/TrayPieceInput";
 import Navbar from "../shared/Navbar";
 import LoadingSpinner from "../shared/LoadingSpinner";
 import { ArrowLeft, ArrowRightLeft, CheckCircle, AlertCircle, Package } from "lucide-react";
-import { EGG_SIZES } from "../../utils/constants";
+import { EGG_SIZES, EGGS_PER_TRAY } from "../../utils/constants";
 
 const LogTransfer = () => {
   const { currentUser } = useAuth();
@@ -25,6 +25,7 @@ const LogTransfer = () => {
   const sizeName = EGG_SIZES.find((s) => s.id === selectedSize)?.name || "";
   const bData = bodega[selectedSize] || { trays: 0, pieces: 0 };
   const bTotal = toTotalPieces(bData.trays, bData.pieces);
+  const bTrays = Math.floor(bTotal / EGGS_PER_TRAY);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,23 +89,11 @@ const LogTransfer = () => {
             <Package className="w-4 h-4 text-blue-600" />
             <h3 className="text-sm font-bold text-blue-800">Available in Bodega ({sizeName})</h3>
           </div>
-          <div className="flex items-center gap-4 justify-center">
-            <div className="text-center">
-              <p className="text-2xl font-extrabold text-blue-900">{bData.trays}</p>
-              <p className="text-[10px] text-blue-500">trays</p>
-            </div>
-            <p className="text-blue-400 font-bold">+</p>
-            <div className="text-center">
-              <p className="text-2xl font-extrabold text-blue-900">{bData.pieces}</p>
-              <p className="text-[10px] text-blue-500">pieces</p>
-            </div>
-            <p className="text-blue-400 font-bold">=</p>
-            <div className="text-center">
-              <p className="text-2xl font-extrabold text-blue-900">{bTotal}</p>
-              <p className="text-[10px] text-blue-500">total pcs</p>
-            </div>
+          <div className="text-center">
+            <p className="text-3xl font-extrabold text-blue-900">{bTrays}</p>
+            <p className="text-[10px] text-blue-500">trays available</p>
           </div>
-          {bTotal === 0 && (
+          {bTrays === 0 && (
             <p className="text-red-500 text-xs font-bold mt-2 text-center">
               ⚠️ Out of stock! Ask admin to order more.
             </p>

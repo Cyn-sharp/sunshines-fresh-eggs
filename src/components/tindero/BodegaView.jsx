@@ -2,7 +2,7 @@ import { useBodegaStock, toTotalPieces } from "../../hooks/useInventory";
 import StockCard from "../shared/StockCard";
 import Navbar from "../shared/Navbar";
 import LoadingSpinner from "../shared/LoadingSpinner";
-import { EGG_SIZES } from "../../utils/constants";
+import { EGG_SIZES, EGGS_PER_TRAY } from "../../utils/constants";
 import { ArrowLeft, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,8 +35,8 @@ const BodegaView = () => {
         <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-center">
           <Package className="w-6 h-6 text-blue-500 mx-auto mb-1" />
           <p className="text-xs text-blue-600 font-medium">Total in Bodega</p>
-          <p className="text-3xl font-extrabold text-blue-900">{totalPieces.toLocaleString()}</p>
-          <p className="text-[10px] text-blue-400">pieces available</p>
+          <p className="text-3xl font-extrabold text-blue-900">{Math.floor(totalPieces / EGGS_PER_TRAY)}</p>
+          <p className="text-[10px] text-blue-400">trays available</p>
         </div>
       </div>
 

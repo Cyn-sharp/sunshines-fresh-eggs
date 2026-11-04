@@ -1,17 +1,29 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useBodegaStock, useTindahanStock, toTotalPieces } from "../../hooks/useInventory";
 import { useTodayAudit } from "../../hooks/useAudit";
+import { useDailyReset } from "../../hooks/useDailyReset";
 import Navbar from "../shared/Navbar";
-import { ShoppingCart, LogOut, Bell, Store, Warehouse, Users, Tag, ClipboardCheck, PhilippinePeso, AlertTriangle } from "lucide-react";
+import AuditCalendar from "../shared/AuditCalendar";
+import { ShoppingCart, LogOut, Bell, Store, Warehouse, Users, Tag, ClipboardCheck, PhilippinePeso, AlertTriangle, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { EGG_SIZES, DISCREPANCY_THRESHOLD } from "../../utils/constants";
+import { EGG_SIZES, DISCREPANCY_THRESHOLD, EGGS_PER_TRAY } from "../../utils/constants";
 
 const AdminDashboard = () => {
   const { userProfile, logout } = useAuth();
   const { stock: bodega } = useBodegaStock();
   const { stock: tindahan } = useTindahanStock();
   const { audit } = useTodayAudit();
+  const { justReset } = useDailyReset();
   const navigate = useNavigate();
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [now, setNow] = useState(new Date());
+
+  // Live clock
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   let totalBodega = 0;
   let totalTindahan = 0;
@@ -20,7 +32,13 @@ const AdminDashboard = () => {
     if (tindahan[s.id]) totalTindahan += toTotalPieces(tindahan[s.id].trays, tindahan[s.id].pieces);
   });
 
+  const bodegaTrays = Math.floor(totalBodega / EGGS_PER_TRAY);
+  const tindahanTrays = Math.floor(totalTindahan / EGGS_PER_TRAY);
+
   const hasFlaggedAudit = audit && audit.discrepancyPct > DISCREPANCY_THRESHOLD && audit.status !== "approved";
+
+  const timeStr = now.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const dateStr = now.toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric" });
 
   return (
     <div className="min-h-screen bg-sunshine-50 pb-24">
@@ -29,8 +47,16 @@ const AdminDashboard = () => {
           <div>
             <p className="text-sunshine-100 text-sm">Welcome back,</p>
             <h1 className="text-xl font-extrabold">{userProfile?.name || "Admin"} 👋</h1>
+            {/* Date + Time */}
+            <div className="flex items-center gap-2 mt-1">
+              <Clock className="w-3 h-3 text-sunshine-200" />
+              <p className="text-sunshine-200 text-xs">{dateStr} • {timeStr}</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
+            <button onClick={() => setShowCalendar(true)} className="p-2 bg-sunshine-500 rounded-full">
+              <Calendar className="w-5 h-5" />
+            </button>
             <button className="relative p-2 bg-sunshine-500 rounded-full">
               <Bell className="w-5 h-5" />
               {hasFlaggedAudit && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />}
@@ -39,6 +65,13 @@ const AdminDashboard = () => {
           </div>
         </div>
       </header>
+
+      {/* Reset Notification */}
+      {justReset && (
+        <div className="mx-4 mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-3 flex items-center gap-2 animate-pulse">
+          <span className="text-sm">🔄 Tindahan stock reset for new shift (5 PM)</span>
+        </div>
+      )}
 
       {/* Audit Alert */}
       {audit && (
@@ -67,12 +100,12 @@ const AdminDashboard = () => {
         <button onClick={() => navigate("/admin/bodega")} className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 text-left active:scale-[0.97]">
           <Warehouse className="w-5 h-5 text-blue-500 mb-1" />
           <p className="text-xs text-blue-600 font-medium">Bodega</p>
-          <p className="text-2xl font-extrabold text-blue-900">{totalBodega.toLocaleString()}</p>
+          <p className="text-2xl font-extrabold text-blue-900">{bodegaTrays} trays</p>
         </button>
         <button onClick={() => navigate("/admin/tindahan")} className="bg-sunshine-50 border-2 border-sunshine-200 rounded-2xl p-4 text-left active:scale-[0.97]">
           <Store className="w-5 h-5 text-sunshine-500 mb-1" />
           <p className="text-xs text-sunshine-600 font-medium">Tindahan</p>
-          <p className="text-2xl font-extrabold text-sunshine-900">{totalTindahan.toLocaleString()}</p>
+          <p className="text-2xl font-extrabold text-sunshine-900">{tindahanTrays} trays</p>
         </button>
       </div>
 
@@ -94,6 +127,9 @@ const AdminDashboard = () => {
           </button>
         </div>
       </div>
+
+      {/* Calendar Modal */}
+      {showCalendar && <AuditCalendar onClose={() => setShowCalendar(false)} />}
 
       <Navbar role="admin" />
     </div>

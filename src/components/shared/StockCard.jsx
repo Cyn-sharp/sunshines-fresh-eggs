@@ -1,10 +1,11 @@
-// src/components/shared/StockCard.jsx
 import { Egg } from "lucide-react";
 import { toTotalPieces } from "../../hooks/useInventory";
+import { EGGS_PER_TRAY } from "../../utils/constants";
 
 const StockCard = ({ sizeName, short, trays, pieces, highlight }) => {
   const total = toTotalPieces(trays, pieces);
-  const isLow = total > 0 && total <= 60; // 2 trays or less = low
+  const totalTrays = Math.floor(total / EGGS_PER_TRAY);
+  const isLow = totalTrays > 0 && totalTrays <= 2;
   const isEmpty = total === 0;
 
   return (
@@ -40,21 +41,9 @@ const StockCard = ({ sizeName, short, trays, pieces, highlight }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mt-3">
-        <div className="bg-sunshine-50 rounded-xl p-2 text-center">
-          <p className="text-[10px] text-sunshine-500 font-medium">Trays</p>
-          <p className="text-xl font-extrabold text-sunshine-900">{trays}</p>
-        </div>
-        <div className="bg-sunshine-50 rounded-xl p-2 text-center">
-          <p className="text-[10px] text-sunshine-500 font-medium">Pieces</p>
-          <p className="text-xl font-extrabold text-sunshine-900">{pieces}</p>
-        </div>
-      </div>
-
-      <div className="mt-2 text-center">
-        <p className="text-[10px] text-sunshine-400">
-          Total: <span className="font-bold text-sunshine-600">{total}</span> pcs
-        </p>
+      <div className="bg-sunshine-50 rounded-xl p-3 text-center mt-3">
+        <p className="text-[10px] text-sunshine-500 font-medium">Trays</p>
+        <p className="text-2xl font-extrabold text-sunshine-900">{totalTrays}</p>
       </div>
     </div>
   );

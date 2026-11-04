@@ -2,7 +2,7 @@ import { useTindahanStock, toTotalPieces } from "../../hooks/useInventory";
 import StockCard from "../shared/StockCard";
 import Navbar from "../shared/Navbar";
 import LoadingSpinner from "../shared/LoadingSpinner";
-import { EGG_SIZES } from "../../utils/constants";
+import { EGG_SIZES, EGGS_PER_TRAY } from "../../utils/constants";
 import { ArrowLeft, Store } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,8 +36,8 @@ const TinderoStock = () => {
         <div className="bg-sunshine-100 border-2 border-sunshine-300 rounded-2xl p-4 text-center">
           <Store className="w-6 h-6 text-sunshine-600 mx-auto mb-1" />
           <p className="text-xs text-sunshine-600 font-medium">Total at Tindahan</p>
-          <p className="text-3xl font-extrabold text-sunshine-900">{totalPieces.toLocaleString()}</p>
-          <p className="text-[10px] text-sunshine-500">pieces</p>
+          <p className="text-3xl font-extrabold text-sunshine-900">{Math.floor(totalPieces / EGGS_PER_TRAY)}</p>
+          <p className="text-[10px] text-sunshine-500">trays</p>
         </div>
       </div>
 
